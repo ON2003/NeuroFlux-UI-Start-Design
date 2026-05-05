@@ -27,7 +27,10 @@ import AlertsPanel from './components/alerts/AlertsPanel';
 import InstrumentExplorer from './components/instruments/InstrumentExplorer';
 import InstrumentDetail from './components/instruments/InstrumentDetail';
 
+import LoginPage from './components/auth/LoginPage';
+
 export default function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [instruments, setInstruments] = useState<Instrument[]>(mockInstruments);
   const [isInitializing, setIsInitializing] = useState(true);
   const [view, setView] = useState<'dashboard' | 'detail'>('dashboard');
@@ -57,6 +60,10 @@ export default function App() {
   const handleBackToDashboard = () => {
     setView('dashboard');
   };
+
+  if (!isAuthenticated) {
+    return <LoginPage onLogin={() => setIsAuthenticated(true)} />;
+  }
 
   if (isInitializing) {
     return (

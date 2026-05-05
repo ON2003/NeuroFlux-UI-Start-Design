@@ -49,6 +49,58 @@ export default function InstrumentExplorer({ instruments: initialInstruments, on
     }
   }, [viewMode, rooms, selectedRoom]);
 
+  const { priorityInstruments, instrumentsByRoom, sortedRooms } = useMemo(() => {
+    const priority = filteredInstruments.filter(i => i.status === 'critical' || i.status === 'warning');
+    
+    const groups: Record<string, Instrument[]> = {};
+    filteredInstruments.forEach(inst => {
+      const r = inst.room;
+      if (!groups[r]) groups[r] = [];
+      groups[r].push(inst);
+    });
+    
+    return { 
+      priorityInstruments: priority, 
+      instrumentsByRoom: groups,
+      sortedRooms: Object.keys(groups).sort()
+    };
+  }, [filteredInstruments]);
+
+  const InstrumentCard = ({ instrument }: { instrument: Instrument }) => (
+    <motion.div
+      key={instrument.id}
+      whileHover={{ x: 4, backgroundColor: 'rgba(0,0,0,0.01)' }}
+      onClick={() => onSelectInstrument(instrument)}
+      className="bg-white border border-lab-surface p-3 rounded-lg flex items-center gap-4 cursor-pointer group transition-all"
+    >
+      <div className={`w-1 h-8 rounded-full ${
+        instrument.status === 'critical' ? 'bg-critical shadow-[0_0_8px_rgba(239,68,68,0.4)]' : 
+        instrument.status === 'warning' ? 'bg-warning shadow-[0_0_8px_rgba(245,158,11,0.4)]' : 
+        instrument.status === 'operational' ? 'bg-success' : 'bg-slate-light/20'
+      }`} />
+
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-0.5">
+          <h3 className="font-bold text-[13px] text-slate-dark group-hover:text-black transition-colors truncate">{instrument.name}</h3>
+          <span className="text-[8px] font-mono text-slate-light font-bold px-1 py-0.5 bg-lab-bg rounded border border-lab-surface uppercase shrink-0">
+            {instrument.id}
+          </span>
+        </div>
+        <div className="flex items-center gap-3 text-[9px] text-slate-light font-semibold uppercase tracking-wider truncate">
+          <span className="flex items-center gap-1">
+            {instrument.type}
+          </span>
+          <span className="opacity-30">•</span>
+          <span className="truncate">{instrument.location}</span>
+        </div>
+      </div>
+
+      <div className="bg-lab-bg p-2 rounded group-hover:bg-slate-dark group-hover:text-white transition-colors duration-200 shrink-0">
+        <Activity size={12} />
+      </div>
+    </motion.div>
+  );
+
   const handleUpdateInstrument = (updated: Instrument) => {
     setFleetInstruments(prev => prev.map(inst => inst.id === updated.id ? updated : inst));
   };
@@ -208,7 +260,7 @@ export default function InstrumentExplorer({ instruments: initialInstruments, on
           </div>
         )}
         
-        <div className="flex-1 overflow-y-auto pr-2">
+        <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
           <AnimatePresence mode="wait">
             {viewMode === 'list' ? (
               <motion.div 
@@ -216,42 +268,44 @@ export default function InstrumentExplorer({ instruments: initialInstruments, on
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="grid grid-cols-1 gap-2"
+                className="space-y-8"
               >
-                {filteredInstruments.map((instrument) => (
-                  <motion.div
-                    key={instrument.id}
-                    whileHover={{ y: -1, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}
-                    onClick={() => onSelectInstrument(instrument)}
-                    className="bg-white border border-lab-surface p-2.5 rounded flex items-center gap-4 cursor-pointer group transition-all"
-                  >
-                    <div className={`w-1.5 h-8 rounded-full ${
-                      instrument.status === 'critical' ? 'bg-critical' : 
-                      instrument.status === 'warning' ? 'bg-warning' : 
-                      instrument.status === 'operational' ? 'bg-success' : 'bg-slate-light/30'
-                    }`} />
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <h3 className="font-bold text-[14px] text-slate-dark group-hover:text-black transition-colors truncate">{instrument.name}</h3>
-                        <span className="text-[9px] font-mono text-slate-light font-bold px-1.5 py-0.5 bg-lab-bg rounded border border-lab-surface uppercase shrink-0">
-                          {instrument.id}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-3 text-[10px] text-slate-light font-medium uppercase tracking-wider truncate">
-                        <span className="flex items-center gap-1">
-                          <ShieldCheck size={10} className="text-success" /> {instrument.type}
-                        </span>
-                        <span className="opacity-30">•</span>
-                        <span className="truncate">{instrument.location}</span>
-                      </div>
+                {/* Priority Section */}
+                {priorityInstruments.length > 0 && !search && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-4 px-2">
+                      <div className="w-2 h-2 rounded-full bg-critical animate-pulse" />
+                      <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-critical">Priority Action Required</h4>
+                      <div className="flex-1 h-[1px] bg-critical/10" />
                     </div>
-
-                    <div className="bg-lab-bg p-2 rounded group-hover:bg-slate-dark group-hover:text-white transition-colors duration-200 shrink-0">
-                      <Activity size={14} />
+                    <div className="grid grid-cols-1 gap-2">
+                      {priorityInstruments.map(inst => (
+                        <InstrumentCard key={inst.id} instrument={inst} />
+                      ))}
                     </div>
-                  </motion.div>
+                  </div>
+                )}
+
+                {/* Grouped by Room */}
+                {sortedRooms.map(room => (
+                  <div key={room}>
+                    <div className="flex items-center gap-2 mb-4 px-2">
+                      <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-light">Room: {room}</h4>
+                      <div className="flex-1 h-[1px] bg-lab-surface" />
+                    </div>
+                    <div className="grid grid-cols-1 gap-2">
+                      {instrumentsByRoom[room].map(inst => (
+                        <InstrumentCard key={inst.id} instrument={inst} />
+                      ))}
+                    </div>
+                  </div>
                 ))}
+
+                {filteredInstruments.length === 0 && (
+                  <div className="text-center py-20 bg-white border border-lab-surface rounded-xl border-dashed">
+                    <p className="text-sm text-slate-light">No instruments match current filter criteria.</p>
+                  </div>
+                )}
               </motion.div>
             ) : (
               <motion.div 
