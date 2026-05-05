@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import Markdown from 'react-markdown';
 import { 
@@ -16,9 +16,19 @@ import {
   Save,
   X,
   ShieldCheck,
-  Plus
+  Plus,
+  Send,
+  User,
+  Bot
 } from 'lucide-react';
 import { Instrument } from '../../types';
+
+interface Message {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: string;
+}
 
 interface InstrumentDetailProps {
   instrument: Instrument;
@@ -29,12 +39,69 @@ export default function InstrumentDetail({ instrument, onUpdate }: InstrumentDet
   const [activeTab, setActiveTab] = useState('insights');
   const [isEditingWorkflow, setIsEditingWorkflow] = useState(false);
   const [workflowText, setWorkflowText] = useState(instrument.workflow || '');
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: '1',
+      role: 'assistant',
+      content: `Hello! I am NeuroFlux Agent assigned to ${instrument.name}. I've been monitoring its telemetry and running continuous probabilistic models. How can I assist you today?`,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    }
+  ]);
+  const [inputValue, setInputValue] = useState('');
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom of chat
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, activeTab]);
 
   // Reset local workflow text when instrument changes
   useEffect(() => {
     setWorkflowText(instrument.workflow || '');
     setIsEditingWorkflow(false);
+    // Reset messages for the new instrument
+    setMessages([
+      {
+        id: '1',
+        role: 'assistant',
+        content: `Hello! I am NeuroFlux Agent assigned to ${instrument.name}. I've been monitoring its telemetry and running continuous probabilistic models. How can I assist you today?`,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }
+    ]);
   }, [instrument.id]);
+
+  const handleSendMessage = () => {
+    if (!inputValue.trim()) return;
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      role: 'user',
+      content: inputValue,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setInputValue('');
+
+    // Simulate agent response
+    setTimeout(() => {
+      const responses = [
+        "I've analyzed the pressure data. It seems the baseline shift is correlated with the ambient temperature increase in Room 4A. I recommend checking the cooling system.",
+        "Based on the last 3 duty cycles, the precision has dropped by 0.4%. This usually indicates the beginning of seal wear. Shall I prepare a maintenance ticket?",
+        "The current workflow recipe is being followed with 98% compliance. However, step 3 could be shortened by 5 minutes to optimize throughput without compromising stability.",
+        "I'm detecting rare micro-fluctuations in the power supply. It hasn't affected results yet, but I'll keep a 'tight-window' monitoring on it."
+      ];
+      const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+      
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: randomResponse,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+      setMessages(prev => [...prev, assistantMessage]);
+    }, 1000);
+  };
 
   const handleSaveWorkflow = () => {
     onUpdate({
@@ -45,7 +112,7 @@ export default function InstrumentDetail({ instrument, onUpdate }: InstrumentDet
   };
 
   const tabs = [
-    { id: 'insights', label: 'AI Insights', icon: BrainCircuit },
+    { id: 'insights', label: 'NeuroFlux Agent', icon: BrainCircuit },
     { id: 'workflow', label: 'User Workflow', icon: Clock },
     { id: 'manual', label: 'Documentation', icon: BookOpen },
   ];
@@ -100,7 +167,7 @@ export default function InstrumentDetail({ instrument, onUpdate }: InstrumentDet
       )}
 
       {/* Tabbed System (Insight -> Context -> Data) */}
-      <div className="border border-lab-surface rounded-xl overflow-hidden bg-white shadow-sm">
+      <div className="border border-lab-surface rounded-xl overflow-hidden bg-white shadow-sm flex flex-col h-[700px]">
         <div className="flex overflow-x-auto border-b border-lab-surface bg-lab-bg/30">
           {tabs.map((tab) => (
             <button
@@ -122,7 +189,7 @@ export default function InstrumentDetail({ instrument, onUpdate }: InstrumentDet
           ))}
         </div>
 
-        <div className="p-8">
+        <div className="flex-1 overflow-hidden p-0">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
@@ -130,47 +197,75 @@ export default function InstrumentDetail({ instrument, onUpdate }: InstrumentDet
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -10 }}
               transition={{ duration: 0.15 }}
+              className="h-full flex flex-col"
             >
               {activeTab === 'insights' && (
-                <div className="space-y-8">
-                  <div>
-                    <h3 className="text-xs uppercase tracking-[0.2em] font-bold text-slate-light mb-4 flex items-center gap-2">
-                      <Zap size={14} className="text-amber-500" />
-                      Strategic Recommendations
-                    </h3>
-                    <div className="space-y-3">
-                      {instrument.recommendations.map(rec => (
-                        <div key={rec.id} className="flex items-start gap-4 p-4 border border-lab-surface rounded-lg bg-lab-bg/10 hover:bg-white hover:shadow-subtle transition-all">
-                          <div className={`p-1.5 rounded-full mt-0.5 ${rec.priority === 'high' ? 'bg-critical text-white' : 'bg-success text-white'}`}>
-                             <ArrowDownRight size={14} />
-                          </div>
-                          <div>
-                            <p className="font-bold text-slate-dark">{rec.action}</p>
-                            <p className="text-sm text-slate-light mt-1">{rec.reason}</p>
-                          </div>
+                <div className="flex-1 flex flex-col h-full bg-lab-bg/10">
+                  {/* Chat Area */}
+                  <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                    {messages.map((msg) => (
+                      <div 
+                        key={msg.id} 
+                        className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
+                      >
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm ${
+                          msg.role === 'assistant' ? 'bg-slate-dark text-white' : 'bg-white border border-lab-surface text-slate-dark'
+                        }`}>
+                          {msg.role === 'assistant' ? <Bot size={16} /> : <User size={16} />}
                         </div>
-                      ))}
-                      {instrument.recommendations.length === 0 && (
-                        <p className="text-sm text-slate-light italic">No immediate actions required for this instrument.</p>
-                      )}
-                    </div>
+                        <div className={`max-w-[80%] ${msg.role === 'user' ? 'items-end' : ''} flex flex-col`}>
+                          <div className={`p-4 rounded-2xl text-sm leading-relaxed shadow-sm ${
+                            msg.role === 'assistant' 
+                              ? 'bg-white text-slate-dark rounded-tl-sm border border-lab-surface' 
+                              : 'bg-slate-dark text-white rounded-tr-sm'
+                          }`}>
+                            {msg.content}
+                          </div>
+                          <span className="text-[10px] font-bold text-slate-light uppercase mt-1 px-1">
+                            {msg.timestamp}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                    <div ref={chatEndRef} />
                   </div>
-                  <div>
-                    <h3 className="text-xs uppercase tracking-[0.2em] font-bold text-slate-light mb-4">Core AI Caretaker Analysis</h3>
-                    <div className="space-y-4">
-                      {instrument.aiInsights.map((insight, i) => (
-                        <div key={i} className="flex items-start gap-3">
-                          <div className="w-1.5 h-1.5 rounded-full bg-slate-dark mt-2" />
-                          <p className="text-slate-dark leading-relaxed font-body">{insight}</p>
-                        </div>
-                      ))}
+
+                  {/* Input Area */}
+                  <div className="p-4 bg-white border-t border-lab-surface">
+                    <div className="relative group">
+                      <input 
+                        type="text"
+                        value={inputValue}
+                        onChange={(e) => setInputValue(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                        placeholder="Ask NeuroFlux Agent anything about this instrument..."
+                        className="w-full bg-lab-bg/30 border border-lab-surface rounded-xl pl-4 pr-12 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-slate-dark/10 transition-all font-body"
+                      />
+                      <button 
+                        onClick={handleSendMessage}
+                        disabled={!inputValue.trim()}
+                        className={`absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-lg flex items-center justify-center transition-all ${
+                          inputValue.trim() ? 'bg-slate-dark text-white shadow-md' : 'text-slate-light opacity-50'
+                        }`}
+                      >
+                        <Send size={16} />
+                      </button>
+                    </div>
+                    <div className="flex items-center gap-4 mt-3 px-2">
+                       <span className="text-[9px] font-bold text-slate-light uppercase tracking-widest flex items-center gap-1">
+                         <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+                         Agent Online
+                       </span>
+                       <span className="text-[9px] font-bold text-slate-light uppercase tracking-widest opacity-60">
+                         Powered by NeuroFlux Core v8.2
+                       </span>
                     </div>
                   </div>
                 </div>
               )}
 
               {activeTab === 'workflow' && (
-                <div className="space-y-8">
+                <div className="space-y-8 p-8 overflow-y-auto">
                   {/* Performance Metrics Row */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="p-4 border border-lab-surface rounded-lg bg-lab-bg/10">
@@ -287,7 +382,7 @@ export default function InstrumentDetail({ instrument, onUpdate }: InstrumentDet
               )}
 
               {activeTab === 'manual' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-8 overflow-y-auto">
                   {[
                     "Calibration Schedule v4.2",
                     "Critical Safety Protocols - BIO_B2",
@@ -322,3 +417,4 @@ export default function InstrumentDetail({ instrument, onUpdate }: InstrumentDet
     </div>
   );
 }
+
