@@ -42,7 +42,13 @@ export const mockInstruments: Instrument[] = [
         priority: 'high'
       }
     ],
-    workflow: '# High Performance Liquid Chromatography Protocol\n\n## 1. System Preparation\n- Ensure mobile phases are freshly prepared and degassed.\n- Check pump seals for any visible leaks.\n- Verify waste container capacity.\n\n## 2. Startup & Equilibration\n- Power on system and launch Control Software.\n- Purge pump at 5.0 mL/min for 2 minutes to remove air.\n- Equilibrate column at initial conditions for 20 mins until baseline is stable.\n\n## 3. Sample Preparation\n- Filter samples through 0.22µm membrane.\n- Ensure vials are capped correctly to prevent solvent evaporation.\n\n## 4. Run Analysis\n- Load sequence into the workflow manager.\n- Monitor pressure and column temperature during the first 3 injections.',
+    workflows: [
+      {
+        id: 'w1',
+        title: 'HPLC Daily Protocol',
+        content: '## 1) Preparation\n- Ensure mobile phases are freshly prepared and degassed.\n- Check pump seals for any visible leaks.\n\n## 2) Startup & Equilibration\n- Power on system and launch Control Software.\n- Equilibrate column at initial conditions for 20 mins.'
+      }
+    ],
     logs: [
       { id: 'l1', timestamp: '2026-05-05T12:00:01Z', level: 'SYSTEM', message: 'Pressure sensor auto-calibration initiated.' },
       { id: 'l2', timestamp: '2026-05-05T12:05:22Z', level: 'ERROR', message: 'Pressure out of bounds: 245.2 bar (Max: 230.0 bar).' },
@@ -90,7 +96,13 @@ export const mockInstruments: Instrument[] = [
         priority: 'medium'
       }
     ],
-    workflow: '# Mass Spectrometry Tuning and Calibration\n\n## 1. Safety Check\n- Verify nitrogen gas supply pressure.\n- Check roughing pump oil levels.\n\n## 2. Vacuum Check\n- Ensure source pressure is below 2.0e-5 Torr.\n- Check baking status if system was recently vented.\n\n## 3. Auto-Tune\n- Run the Daily Check infusion (Standard Mix B).\n- If FWHM for m/z 622 > 0.65, perform a full mass calibration.\n\n## 4. Maintenance Entry\n- Document any peak width deviations in the digital logbook.',
+    workflows: [
+      {
+        id: 'w2',
+        title: 'MS Calibration Recipe',
+        content: '## 1) Safety Check\n- Verify nitrogen gas supply pressure.\n- Check roughing pump oil levels.\n\n## 2) Vacuum Check\n- Ensure source pressure is below 2.0e-5 Torr.'
+      }
+    ],
     logs: [
       { id: 'l4', timestamp: '2026-05-05T10:00:00Z', level: 'INFO', message: 'Daily verification sweep complete.' },
       { id: 'l5', timestamp: '2026-05-05T11:20:00Z', level: 'WARN', message: 'Vacuum stability alert: Deviation detected.' }
@@ -114,6 +126,7 @@ export const mockInstruments: Instrument[] = [
     predictions: [],
     anomalies: [],
     recommendations: [],
+    workflows: [],
     logs: [
       { id: 'l6', timestamp: '2026-05-05T09:00:00Z', level: 'INFO', message: 'Cryogen monitor: 88% Liquid Helium.' }
     ]
@@ -136,6 +149,7 @@ export const mockInstruments: Instrument[] = [
     predictions: [],
     anomalies: [],
     recommendations: [],
+    workflows: [],
     logs: []
   },
   {
@@ -155,6 +169,7 @@ export const mockInstruments: Instrument[] = [
     predictions: [],
     anomalies: [],
     recommendations: [],
+    workflows: [],
     logs: []
   }
 ];

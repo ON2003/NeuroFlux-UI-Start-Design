@@ -121,6 +121,7 @@ export default function InstrumentExplorer({ instruments: initialInstruments, on
       predictions: [],
       anomalies: [],
       recommendations: [],
+      workflows: [],
       logs: [{ id: Date.now().toString(), timestamp: new Date().toISOString(), level: 'SYSTEM', message: 'Instrument provisioned and added to digital twin.' }]
     };
     setFleetInstruments(prev => [...prev, newInstrument]);

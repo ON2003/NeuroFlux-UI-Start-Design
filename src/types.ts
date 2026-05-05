@@ -10,6 +10,12 @@ export interface Alert {
   aiInsight: string;
 }
 
+export interface Workflow {
+  id: string;
+  title: string;
+  content: string;
+}
+
 export interface Instrument {
   id: string;
   name: string;
@@ -25,7 +31,7 @@ export interface Instrument {
   predictions: Prediction[];
   anomalies: Anomaly[];
   recommendations: Recommendation[];
-  workflow?: string;
+  workflows: Workflow[];
   logs: LogEntry[];
 }
 

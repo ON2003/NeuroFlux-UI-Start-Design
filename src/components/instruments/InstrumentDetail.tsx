@@ -37,8 +37,11 @@ interface InstrumentDetailProps {
 
 export default function InstrumentDetail({ instrument, onUpdate }: InstrumentDetailProps) {
   const [activeTab, setActiveTab] = useState('insights');
-  const [isEditingWorkflow, setIsEditingWorkflow] = useState(false);
-  const [workflowText, setWorkflowText] = useState(instrument.workflow || '');
+  const [editingWorkflowId, setEditingWorkflowId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editContent, setEditContent] = useState('');
+  const [expandedWorkflowId, setExpandedWorkflowId] = useState<string | null>(null);
+  
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -55,10 +58,10 @@ export default function InstrumentDetail({ instrument, onUpdate }: InstrumentDet
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, activeTab]);
 
-  // Reset local workflow text when instrument changes
+  // Reset states when instrument changes
   useEffect(() => {
-    setWorkflowText(instrument.workflow || '');
-    setIsEditingWorkflow(false);
+    setEditingWorkflowId(null);
+    setExpandedWorkflowId(null);
     // Reset messages for the new instrument
     setMessages([
       {
@@ -104,12 +107,44 @@ export default function InstrumentDetail({ instrument, onUpdate }: InstrumentDet
   };
 
   const handleSaveWorkflow = () => {
+    if (!editingWorkflowId) return;
+
+    let updatedWorkflows = [...instrument.workflows];
+    
+    if (editingWorkflowId === 'new') {
+      updatedWorkflows.push({
+        id: `w-${Date.now()}`,
+        title: editTitle || 'Untitled Workflow',
+        content: editContent
+      });
+    } else {
+      updatedWorkflows = updatedWorkflows.map(w => 
+        w.id === editingWorkflowId 
+          ? { ...w, title: editTitle, content: editContent } 
+          : w
+      );
+    }
+
     onUpdate({
       ...instrument,
-      workflow: workflowText
+      workflows: updatedWorkflows
     });
-    setIsEditingWorkflow(false);
+    setEditingWorkflowId(null);
   };
+
+  const startEditing = (workflow?: any) => {
+    if (workflow) {
+      setEditingWorkflowId(workflow.id);
+      setEditTitle(workflow.title);
+      setEditContent(workflow.content);
+    } else {
+      setEditingWorkflowId('new');
+      setEditTitle('');
+      setEditContent('## 1) Preparation\n- \n\n## 2) Execution\n- ');
+    }
+  };
+
+  const sortedWorkflows = [...instrument.workflows].sort((a, b) => a.title.localeCompare(b.title));
 
   const tabs = [
     { id: 'insights', label: 'NeuroFlux Agent', icon: BrainCircuit },
@@ -265,117 +300,148 @@ export default function InstrumentDetail({ instrument, onUpdate }: InstrumentDet
               )}
 
               {activeTab === 'workflow' && (
-                <div className="space-y-8 p-8 overflow-y-auto">
-                  {/* Performance Metrics Row */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="p-4 border border-lab-surface rounded-lg bg-lab-bg/10">
-                       <h5 className="text-[10px] uppercase font-bold text-slate-light mb-2">Operator Precision</h5>
-                       <div className="flex items-center gap-2 text-success font-bold">
-                          <Activity size={14} />
-                          <span>94.2%</span>
-                       </div>
+                <div className="flex-1 flex flex-col h-full bg-lab-bg/10">
+                  <div className="p-6 border-b border-lab-surface bg-white flex items-center justify-between">
+                    <div>
+                      <h3 className="font-sans font-bold text-slate-dark">Instrument Workflow Protocols</h3>
+                      <p className="text-xs text-slate-light mt-0.5">Standardized operational recipes for this unit.</p>
                     </div>
-                    <div className="p-4 border border-lab-surface rounded-lg bg-lab-bg/10">
-                       <h5 className="text-[10px] uppercase font-bold text-slate-light mb-2">Recipe Compliance</h5>
-                       <div className="flex items-center gap-2 text-slate-dark font-bold">
-                          <ShieldCheck size={14} className="text-success" />
-                          <span>Strict</span>
-                       </div>
-                    </div>
-                    <div className="p-4 border border-lab-surface rounded-lg bg-lab-bg/10">
-                       <h5 className="text-[10px] uppercase font-bold text-slate-light mb-2">Last Modified</h5>
-                       <div className="text-sm font-bold text-slate-dark">2 days ago</div>
-                    </div>
+                    <button 
+                      onClick={() => startEditing()}
+                      className="flex items-center gap-1.5 px-4 py-2 bg-slate-dark text-white rounded-lg text-xs font-bold hover:bg-black transition-all shadow-md"
+                    >
+                      <Plus size={14} />
+                      Add Workflow
+                    </button>
                   </div>
 
-                  {/* Workflow / Recipe Section */}
-                  <div className="border border-lab-surface rounded-xl overflow-hidden shadow-sm">
-                    <div className="flex items-center justify-between px-6 py-4 bg-lab-bg/30 border-b border-lab-surface">
-                      <div className="flex items-center gap-2">
-                        <Clock size={16} className="text-slate-light" />
-                        <h4 className="font-sans font-bold text-slate-dark">Operational Recipe & Workflow</h4>
-                      </div>
-                      
-                      {!isEditingWorkflow ? (
-                        <button 
-                          onClick={() => setIsEditingWorkflow(true)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-lab-surface rounded text-[11px] font-bold text-slate-dark hover:bg-slate-50 transition-colors shadow-sm"
-                        >
-                          <Edit3 size={14} />
-                          {instrument.workflow ? 'Edit Workflow' : 'Create Workflow'}
-                        </button>
-                      ) : (
-                        <div className="flex items-center gap-2">
-                          <button 
-                            onClick={() => setIsEditingWorkflow(false)}
-                            className="flex items-center gap-1 px-3 py-1.5 bg-white border border-lab-surface rounded text-[11px] font-bold text-critical hover:bg-critical/5 transition-colors"
-                          >
-                            <X size={14} />
-                            Cancel
-                          </button>
-                          <button 
-                            onClick={handleSaveWorkflow}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-dark text-white rounded text-[11px] font-bold hover:bg-black transition-colors shadow-md"
-                          >
-                            <Save size={14} />
-                            Save Recipe
-                          </button>
+                  <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                    {editingWorkflowId ? (
+                      <motion.div 
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-white border border-lab-surface rounded-xl overflow-hidden shadow-lg"
+                      >
+                        <div className="px-6 py-4 border-b border-lab-surface flex items-center justify-between bg-slate-50">
+                          <input 
+                            value={editTitle}
+                            onChange={(e) => setEditTitle(e.target.value)}
+                            placeholder="Workflow Title (e.g. Daily Startup)"
+                            className="bg-transparent font-bold text-slate-dark focus:outline-none placeholder:text-slate-light/50 w-full mr-4"
+                            autoFocus
+                          />
+                          <div className="flex items-center gap-2">
+                             <button 
+                               onClick={() => setEditingWorkflowId(null)}
+                               className="p-1.5 hover:bg-critical/10 text-critical rounded-lg transition-colors"
+                             >
+                               <X size={18} />
+                             </button>
+                             <button 
+                               onClick={handleSaveWorkflow}
+                               className="p-1.5 hover:bg-success/10 text-success rounded-lg transition-colors"
+                             >
+                               <Save size={18} />
+                             </button>
+                          </div>
                         </div>
-                      )}
-                    </div>
-
-                    <div className="p-0 min-h-[400px] flex flex-col">
-                      {isEditingWorkflow ? (
-                        <div className="flex-1 flex flex-col">
-                          <div className="px-6 py-3 bg-slate-50 border-b border-lab-surface flex items-center justify-between">
-                            <span className="text-[10px] font-bold text-slate-light uppercase">Markdown Editor</span>
-                            <span className="text-[9px] text-slate-light opacity-60">Supports headings, lists, and bold text</span>
+                        <div className="p-0">
+                          <div className="px-6 py-2 bg-lab-bg/30 border-b border-lab-surface flex items-center justify-between">
+                            <span className="text-[9px] font-bold text-slate-light uppercase">Markdown Editor</span>
+                            <span className="text-[9px] text-slate-light opacity-50 italic">Use 1) and 2) for steps</span>
                           </div>
                           <textarea
-                            value={workflowText}
-                            onChange={(e) => setWorkflowText(e.target.value)}
-                            placeholder="# Enter instrument workflow recipe here...&#10;&#10;## 1. Preparation&#10;- Step 1...&#10;- Step 2..."
-                            className="flex-1 p-6 font-mono text-sm resize-none focus:outline-none bg-white text-slate-dark"
+                            value={editContent}
+                            onChange={(e) => setEditContent(e.target.value)}
+                            placeholder="## 1) Preparation&#10;- Step 1...&#10;&#10;## 2) Execution&#10;- Step 2..."
+                            className="w-full h-80 p-6 font-mono text-sm resize-none focus:outline-none text-slate-dark leading-relaxed"
                           />
                         </div>
-                      ) : (
-                        <div className="p-8 prose prose-slate max-w-none">
-                          {instrument.workflow ? (
-                            <div className="markdown-body">
-                              <Markdown>{instrument.workflow}</Markdown>
-                            </div>
-                          ) : (
-                            <div className="flex flex-col items-center justify-center py-16 text-center">
-                              <div className="w-16 h-16 bg-lab-bg rounded-full flex items-center justify-center text-slate-light/50 mb-4 border-2 border-dashed border-lab-surface">
-                                <Plus size={24} />
-                              </div>
-                              <h5 className="font-bold text-slate-dark mb-1">No workflow defined</h5>
-                              <p className="text-sm text-slate-light max-w-xs">
-                                Create a standard operating procedure (SOP) or recipe for this instrument to ensure consistent results.
-                              </p>
+                      </motion.div>
+                    ) : (
+                      <>
+                        {sortedWorkflows.length > 0 ? (
+                          sortedWorkflows.map((workflow) => (
+                            <div 
+                              key={workflow.id} 
+                              className="bg-white border border-lab-surface rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+                            >
                               <button 
-                                onClick={() => setIsEditingWorkflow(true)}
-                                className="mt-6 px-4 py-2 bg-slate-dark text-white rounded-md text-xs font-bold hover:shadow-lg transition-all"
+                                onClick={() => setExpandedWorkflowId(expandedWorkflowId === workflow.id ? null : workflow.id)}
+                                className="w-full flex items-center justify-between px-6 py-4 hover:bg-slate-50 transition-colors"
                               >
-                                Initialize Recipe
+                                <div className="flex items-center gap-3">
+                                  <div className={`p-1.5 rounded-lg ${expandedWorkflowId === workflow.id ? 'bg-slate-dark text-white' : 'bg-lab-bg text-slate-light'}`}>
+                                    <Clock size={16} />
+                                  </div>
+                                  <span className="font-bold text-slate-dark">{workflow.title}</span>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                  <button 
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      startEditing(workflow);
+                                    }}
+                                    className="p-1.5 hover:bg-lab-bg rounded-lg text-slate-light hover:text-slate-dark transition-all"
+                                  >
+                                    <Edit3 size={14} />
+                                  </button>
+                                  <ChevronRight 
+                                    size={18} 
+                                    className={`text-slate-light transition-transform duration-300 ${expandedWorkflowId === workflow.id ? 'rotate-90' : ''}`} 
+                                  />
+                                </div>
                               </button>
+                              
+                              <AnimatePresence>
+                                {expandedWorkflowId === workflow.id && (
+                                  <motion.div
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: 'auto', opacity: 1 }}
+                                    exit={{ height: 0, opacity: 0 }}
+                                    className="overflow-hidden border-t border-lab-surface"
+                                  >
+                                    <div className="p-8 prose prose-slate max-w-none prose-sm font-body bg-slate-50/50">
+                                      <div className="markdown-body">
+                                        <Markdown>{workflow.content}</Markdown>
+                                      </div>
+                                    </div>
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
                             </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
+                          ))
+                        ) : (
+                          <div className="flex flex-col items-center justify-center py-20 bg-white border border-lab-surface border-dashed rounded-2xl">
+                            <div className="w-16 h-16 bg-lab-bg rounded-full flex items-center justify-center text-slate-light/40 mb-4">
+                              <Plus size={32} />
+                            </div>
+                            <h4 className="font-bold text-slate-dark">No workflows created</h4>
+                            <p className="text-xs text-slate-light mt-1 mb-6">Standardize operations for this instrument unit.</p>
+                            <button 
+                              onClick={() => startEditing()}
+                              className="px-6 py-2.5 bg-slate-dark text-white rounded-lg text-xs font-bold hover:shadow-lg transition-all"
+                            >
+                              Initialize First Protocol
+                            </button>
+                          </div>
+                        )}
+                      </>
+                    )}
                   </div>
 
                   {/* AI Assistance Footer */}
-                  <div className="p-6 border border-lab-surface rounded-xl bg-slate-dark/5 flex items-start gap-4">
-                    <div className="p-2 bg-slate-dark rounded text-white mt-1">
-                      <BrainCircuit size={16} />
-                    </div>
-                    <div>
-                      <h5 className="text-[11px] font-bold uppercase tracking-widest text-slate-dark mb-1">AI Caretaker Tip</h5>
-                      <p className="text-sm text-slate-dark leading-relaxed opacity-80 italic">
-                        "I can help you optimize this recipe based on historical telemetry. If you notice peak drift, consider adding a 'Temperature Equilibration' step of at least 15 minutes."
-                      </p>
+                  <div className="p-4 bg-white border-t border-lab-surface">
+                    <div className="p-4 border border-lab-surface rounded-xl bg-slate-dark/5 flex items-start gap-4">
+                      <div className="p-2 bg-slate-dark rounded text-white mt-0.5">
+                        <BrainCircuit size={14} />
+                      </div>
+                      <div>
+                        <h5 className="text-[10px] font-bold uppercase tracking-widest text-slate-dark mb-1">Workflow Guardian</h5>
+                        <p className="text-xs text-slate-dark leading-relaxed opacity-70 italic">
+                          "I monitor execution compliance in real-time. If you modify these recipes, I'll update my baseline models to avoid false positive anomaly alerts."
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
