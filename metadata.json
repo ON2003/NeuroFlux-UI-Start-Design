@@ -1,0 +1,6 @@
+{
+  "name": "NeuroFlux",
+  "description": "An operational command interface for laboratory instrument monitoring, reliability, and AI-driven caretakers.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
