@@ -94,19 +94,10 @@ export default function App() {
   return (
     <div className="flex h-screen w-full bg-lab-bg overflow-hidden text-slate-dark">
       {/* Small Navigation Rail (Level 3) */}
-      <nav className="w-16 border-r border-lab-surface bg-lab-bg flex flex-col items-center py-6 gap-8 z-20">
-        <div className="w-10 h-10 bg-slate-dark rounded-md flex items-center justify-center text-white mb-4">
-          <Activity size={24} />
+      <nav className="w-16 border-r border-lab-surface bg-white flex flex-col items-center py-8 gap-8 z-20">
+        <div className="w-10 h-10 bg-slate-dark rounded-xl flex items-center justify-center text-white shadow-lg shadow-slate-dark/20 transition-transform hover:scale-105 cursor-pointer">
+          <Activity size={22} />
         </div>
-        <button 
-          onClick={() => setView('dashboard')}
-          className={`p-2 rounded-lg transition-colors ${view === 'dashboard' ? 'bg-lab-bg text-slate-dark' : 'text-slate-light hover:bg-lab-bg'}`}
-        >
-          <LayoutDashboard size={22} />
-        </button>
-        <button className="p-2 text-slate-light hover:bg-lab-bg rounded-lg transition-colors">
-          <History size={22} />
-        </button>
         <div className="mt-auto">
           <button className="p-2 text-slate-light hover:bg-lab-bg rounded-lg transition-colors">
             <Settings size={22} />

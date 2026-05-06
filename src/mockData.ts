@@ -10,7 +10,7 @@ export const mockInstruments: Instrument[] = [
     lastCalibrated: '2026-04-12',
     location: 'Zone A - BioBay',
     floor: 'Ground Floor',
-    room: 'Room 101',
+    room: 'Lab 101',
     position: { x: 50, y: 50 },
     aiInsights: [
       'Pressure fluctuation detected in pump A indicates a partial seal failure.',
@@ -64,7 +64,7 @@ export const mockInstruments: Instrument[] = [
     lastCalibrated: '2026-03-30',
     location: 'Zone B - Analytical',
     floor: 'Floor 1',
-    room: 'Room 205',
+    room: 'Lab 205',
     position: { x: 150, y: 50 },
     aiInsights: [
       'Vacuum level stability is decreasing. Minor leak suspected in the source chamber.',
@@ -117,7 +117,7 @@ export const mockInstruments: Instrument[] = [
     lastCalibrated: '2026-05-01',
     location: 'Zone C - Physics',
     floor: 'Floor 1',
-    room: 'Room 208',
+    room: 'Lab 208',
     position: { x: 50, y: 150 },
     aiInsights: [
       'Cryogen levels are optimal. Next fill suggested in 14 days.',
@@ -161,7 +161,7 @@ export const mockInstruments: Instrument[] = [
     lastCalibrated: '2026-05-02',
     location: 'Zone A - BioBay',
     floor: 'Ground Floor',
-    room: 'Room 102',
+    room: 'Lab 102',
     position: { x: 150, y: 150 },
     aiInsights: [
       'Rotor usage counters updated. Rotor B-12 has 45 cycles remaining until inspection.'

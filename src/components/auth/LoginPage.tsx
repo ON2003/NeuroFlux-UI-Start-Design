@@ -50,7 +50,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
         >
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-slate-light uppercase tracking-widest ml-1">Access ID (Email)</label>
+              <label className="text-[10px] font-bold text-slate-light uppercase tracking-widest ml-1">Email</label>
               <div className="relative group">
                 <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-light transition-colors group-focus-within:text-slate-dark" />
                 <input 
@@ -66,7 +66,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
 
             <div className="space-y-2">
               <div className="flex justify-between items-center px-1">
-                <label className="text-[10px] font-bold text-slate-light uppercase tracking-widest">Security Protocol (Password)</label>
+                <label className="text-[10px] font-bold text-slate-light uppercase tracking-widest">Password</label>
                 <a href="#" className="text-[10px] font-bold text-slate-dark/60 hover:text-slate-dark transition-colors">Recover</a>
               </div>
               <div className="relative group">
@@ -91,7 +91,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <>
-                  Initiate Secure Login
+                  Login
                   <ChevronRight size={18} className="transition-transform group-hover:translate-x-1" />
                 </>
               )}

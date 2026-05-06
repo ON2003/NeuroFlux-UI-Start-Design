@@ -18,7 +18,7 @@ export default function AlertsPanel({ alerts, onSelectAlert, isCollapsed, onTogg
       className="h-full bg-lab-bg border-r border-lab-surface flex flex-col overflow-hidden relative"
     >
       {/* Header - Stays partially visible */}
-      <div className={`p-4 border-b border-lab-surface flex items-center justify-between transition-colors ${isCollapsed ? 'bg-lab-bg flex-col gap-4' : 'bg-white/40'}`}>
+      <div className={`px-6 py-4 flex items-center justify-between transition-colors ${isCollapsed ? 'bg-lab-bg flex-col gap-5 pt-8' : 'bg-white/40'}`}>
         <AnimatePresence mode="wait">
           {!isCollapsed ? (
             <motion.div 
@@ -28,8 +28,8 @@ export default function AlertsPanel({ alerts, onSelectAlert, isCollapsed, onTogg
               exit={{ opacity: 0, x: -10 }}
               className="flex flex-col flex-1 overflow-hidden"
             >
-              <h2 className="text-lg font-sans font-bold flex items-center gap-2 whitespace-nowrap">
-                Alert Feed
+              <h2 className="text-xl font-sans font-bold flex items-center gap-2 whitespace-nowrap text-slate-dark uppercase tracking-tight">
+                Notification
                 <span className="flex h-2 w-2 rounded-full bg-critical animate-pulse" />
               </h2>
             </motion.div>
@@ -77,7 +77,7 @@ export default function AlertsPanel({ alerts, onSelectAlert, isCollapsed, onTogg
             exit={{ opacity: 0 }}
             className="flex-1 overflow-y-auto flex flex-col"
           >
-            <div className="px-5 py-2.5 bg-white/20 flex items-center justify-between">
+            <div className="px-5 py-1.5 bg-white/30 flex items-center justify-between">
                <span className="text-[10px] font-bold text-slate-light tracking-widest uppercase">{alerts.length} Active Risks</span>
             </div>
 

@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, Filter, Activity, ShieldCheck, X, LayoutList, Map as MapIcon } from 'lucide-react';
+import { Search, FlaskConical, Activity, ShieldCheck, X, LayoutList, Map as MapIcon, ChevronRight } from 'lucide-react';
 import { Instrument } from '../../types';
 import RoomView from './RoomView';
 
@@ -13,9 +13,10 @@ export default function InstrumentExplorer({ instruments: initialInstruments, on
   const [viewMode, setViewMode] = useState<'list' | 'room'>('list');
   const [fleetInstruments, setFleetInstruments] = useState<Instrument[]>(initialInstruments);
   const [search, setSearch] = useState('');
-  const [showFilters, setShowFilters] = useState(false);
   const [selectedFloor, setSelectedFloor] = useState<string | null>(null);
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
+  const [labDropdownOpen, setLabDropdownOpen] = useState(false);
+  const [labSearch, setLabSearch] = useState('');
 
   // Sync with props if they change
   useEffect(() => {
@@ -127,15 +128,10 @@ export default function InstrumentExplorer({ instruments: initialInstruments, on
     setFleetInstruments(prev => [...prev, newInstrument]);
   };
 
-  const resetFilters = () => {
-    setSelectedFloor(null);
-    setSelectedRoom(null);
-  };
-
   return (
-    <section className="flex-1 h-full bg-lab-bg flex flex-col p-8 overflow-hidden relative">
-      <div className="mb-6">
-        <h2 className="text-2xl font-sans font-bold text-slate-dark uppercase tracking-tight mb-4">Fleet Status & Control</h2>
+    <section className="flex-1 h-full bg-lab-bg flex flex-col px-8 py-8 overflow-hidden relative">
+      <div className="mb-8">
+        <h2 className="text-xl font-sans font-bold text-slate-dark uppercase tracking-tight mb-6">Fleet Status & Control</h2>
         
         <div className="flex items-center justify-between">
           {/* Left Part: Search */}
@@ -151,79 +147,7 @@ export default function InstrumentExplorer({ instruments: initialInstruments, on
           </div>
 
           {/* Right Part: Buttons */}
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <button 
-                onClick={() => setShowFilters(!showFilters)}
-                className={`flex items-center gap-2 px-3 h-9 rounded text-[11px] font-bold transition-colors border shadow-sm ${
-                  showFilters || selectedFloor || selectedRoom 
-                    ? 'bg-slate-dark text-white border-slate-dark' 
-                    : 'bg-white border-lab-surface text-slate-dark hover:bg-slate-50'
-                }`}
-              >
-                <Filter size={14} />
-                Filters
-              </button>
-
-              <AnimatePresence>
-                {showFilters && (
-                  <motion.div 
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    className="absolute right-0 mt-2 w-56 bg-white border border-lab-surface shadow-xl rounded z-50 p-3"
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-[9px] font-bold uppercase tracking-widest text-slate-light">Active Filters</span>
-                      <button onClick={resetFilters} className="text-[9px] uppercase font-bold text-critical hover:underline">Clear</button>
-                    </div>
-                    
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-[9px] font-bold text-slate-light uppercase mb-1.5">Floor</label>
-                        <div className="flex flex-wrap gap-1.5">
-                          {floors.map(floor => (
-                            <button
-                              key={floor}
-                              onClick={() => setSelectedFloor(selectedFloor === floor ? null : floor)}
-                              className={`text-[9px] font-bold px-2 py-0.5 rounded border ${
-                                selectedFloor === floor 
-                                  ? 'bg-slate-dark text-white border-slate-dark' 
-                                  : 'bg-lab-bg text-slate-dark border-lab-surface hover:bg-lab-surface'
-                              }`}
-                            >
-                              {floor}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-[9px] font-bold text-slate-light uppercase mb-1.5">Room Space</label>
-                        <div className="flex flex-wrap gap-1.5">
-                          {rooms.map(room => (
-                            <button
-                              key={room}
-                              onClick={() => setSelectedRoom(selectedRoom === room ? null : room)}
-                              className={`text-[9px] font-bold px-2 py-0.5 rounded border ${
-                                selectedRoom === room 
-                                  ? 'bg-slate-dark text-white border-slate-dark' 
-                                  : 'bg-lab-bg text-slate-dark border-lab-surface hover:bg-lab-surface'
-                              }`}
-                            >
-                              {room}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            <div className="h-4 w-[1px] bg-lab-surface mx-1" />
-
+          <div className="flex items-center gap-3">
             <div className="flex items-center bg-white border border-lab-surface p-0.5 rounded shadow-sm h-9">
               <button 
                 onClick={() => setViewMode('list')}
@@ -237,6 +161,88 @@ export default function InstrumentExplorer({ instruments: initialInstruments, on
               >
                 <MapIcon size={12} /> Room
               </button>
+            </div>
+
+            <div className="h-4 w-[1px] bg-lab-surface mx-1" />
+
+            <div className="relative">
+              <button 
+                onClick={() => setLabDropdownOpen(!labDropdownOpen)}
+                className={`flex items-center gap-2 px-4 h-9 rounded text-[11px] font-bold transition-all border shadow-sm ${
+                  selectedRoom 
+                    ? 'bg-slate-dark text-white border-slate-dark' 
+                    : 'bg-white border-lab-surface text-slate-dark hover:bg-slate-50'
+                }`}
+              >
+                <FlaskConical size={14} className={selectedRoom ? 'text-white' : 'text-slate-light'} />
+                {selectedRoom || 'All Labs'}
+                <ChevronRight size={14} className={`transition-transform duration-300 ml-1 ${labDropdownOpen ? 'rotate-90' : ''}`} />
+              </button>
+
+              <AnimatePresence>
+                {labDropdownOpen && (
+                  <>
+                    <div 
+                      className="fixed inset-0 z-[60]" 
+                      onClick={() => { setLabDropdownOpen(false); setLabSearch(''); }}
+                    />
+                    <motion.div 
+                      initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.98 }}
+                      className="absolute right-0 mt-2 w-64 bg-white border border-lab-surface shadow-2xl rounded-xl z-[70] overflow-hidden flex flex-col"
+                    >
+                      <div className="p-2 border-b border-lab-surface bg-lab-bg/30">
+                        <div className="relative">
+                          <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-light" />
+                          <input 
+                            type="text"
+                            placeholder="Filter Labs..."
+                            value={labSearch}
+                            autoFocus
+                            onChange={(e) => setLabSearch(e.target.value)}
+                            className="w-full bg-white border border-lab-surface rounded-lg pl-8 pr-4 py-2 text-[10px] font-bold focus:outline-none focus:ring-2 focus:ring-slate-dark/5"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="max-h-[300px] overflow-y-auto p-1 custom-scrollbar">
+                        <button 
+                          onClick={() => { setSelectedRoom(null); setLabDropdownOpen(false); setLabSearch(''); }}
+                          className={`w-full text-left px-3 py-2.5 text-[10px] uppercase tracking-widest font-bold rounded-lg transition-colors flex items-center justify-between group ${!selectedRoom ? 'bg-slate-dark text-white' : 'text-slate-light hover:bg-lab-bg hover:text-slate-dark'}`}
+                        >
+                          All Laboratories
+                          {!selectedRoom && <div className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]" />}
+                        </button>
+                        
+                        <div className="h-[1px] bg-lab-surface my-1 mx-2" />
+
+                        {rooms
+                          .filter(r => r.toLowerCase().includes(labSearch.toLowerCase()))
+                          .map(room => (
+                            <button
+                              key={room}
+                              onClick={() => { setSelectedRoom(room); setLabDropdownOpen(false); setLabSearch(''); }}
+                              className={`w-full text-left px-3 py-2.5 text-[11px] font-bold rounded-lg transition-all flex items-center justify-between group ${selectedRoom === room ? 'bg-slate-dark text-white' : 'text-slate-dark hover:bg-lab-bg'}`}
+                            >
+                              <div className="flex items-center gap-2">
+                                <div className={`w-1 h-3 rounded-full ${selectedRoom === room ? 'bg-white' : 'bg-slate-light/20'}`} />
+                                Room {room}
+                              </div>
+                              {selectedRoom === room && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                            </button>
+                          ))}
+                        
+                        {rooms.filter(r => r.toLowerCase().includes(labSearch.toLowerCase())).length === 0 && (
+                          <div className="py-8 text-center text-[10px] font-bold text-slate-light uppercase">
+                            No Labs Found
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </div>
@@ -272,7 +278,7 @@ export default function InstrumentExplorer({ instruments: initialInstruments, on
                 className="space-y-8"
               >
                 {/* Priority Section */}
-                {priorityInstruments.length > 0 && !search && (
+                {priorityInstruments.length > 0 && !search && !selectedRoom && (
                   <div>
                     <div className="flex items-center gap-2 mb-4 px-2">
                       <div className="w-2 h-2 rounded-full bg-critical animate-pulse" />
