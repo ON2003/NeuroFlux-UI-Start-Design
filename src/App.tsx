@@ -94,11 +94,11 @@ export default function App() {
   return (
     <div className="flex h-screen w-full bg-lab-bg overflow-hidden text-slate-dark">
       {/* Small Navigation Rail (Level 3) */}
-      <nav className="w-16 border-r border-lab-surface bg-white flex flex-col items-center py-8 gap-8 z-20">
+      <nav className="w-16 border-r border-lab-surface bg-white flex flex-col items-center pt-8 pb-0 gap-8 z-20">
         <div className="w-10 h-10 bg-slate-dark rounded-xl flex items-center justify-center text-white shadow-lg shadow-slate-dark/20 transition-transform hover:scale-105 cursor-pointer">
           <Activity size={22} />
         </div>
-        <div className="mt-auto">
+        <div className="mt-auto h-[52px] flex items-center justify-center w-full">
           <button className="p-2 text-slate-light hover:bg-lab-bg rounded-lg transition-colors">
             <Settings size={22} />
           </button>
@@ -143,22 +143,27 @@ export default function App() {
               className="h-full w-full flex flex-col bg-lab-bg"
             >
               {/* Level 2: Detail View */}
-              <div className="h-16 border-b border-lab-surface flex items-center px-6 gap-4 bg-lab-bg/80 backdrop-blur-sm sticky top-0 z-10">
+              <div className="h-20 border-b border-lab-surface flex items-center pt-8 pb-4 px-6 gap-5 bg-lab-bg/80 backdrop-blur-sm sticky top-0 z-10 transition-all">
                 <button 
                   onClick={handleBackToDashboard}
-                  className="flex items-center gap-2 text-sm font-medium text-slate-light hover:text-slate-dark transition-colors"
+                  className="flex items-center gap-2 text-sm font-medium text-slate-light hover:text-slate-dark transition-all duration-200"
                 >
                   <ArrowLeft size={16} />
-                  Back to Command Center
+                  <span>Back to Command Center</span>
                 </button>
-                <div className="h-4 w-[1px] bg-lab-surface mx-2" />
-                <h2 className="text-lg font-sans font-semibold">{selectedInstrument?.name}</h2>
-                <div className="ml-auto flex items-center gap-2">
-                   <div className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider ${
-                     selectedInstrument?.status === 'critical' ? 'bg-critical/10 text-critical border border-critical/20' :
-                     selectedInstrument?.status === 'warning' ? 'bg-warning/10 text-warning border border-warning/20' :
-                     'bg-success/10 text-success border border-success/20'
+                <div className="h-4 w-[1px] bg-lab-surface/60 mx-1" />
+                <h2 className="text-xl font-sans font-bold text-slate-dark tracking-tight leading-none">{selectedInstrument?.name}</h2>
+                <div className="ml-auto flex items-center gap-3">
+                   <div className={`px-4 py-1.5 rounded-full text-[10px] uppercase font-bold tracking-widest flex items-center gap-2 shadow-sm border ${
+                     selectedInstrument?.status === 'critical' ? 'bg-critical/5 text-critical border-critical/20' :
+                     selectedInstrument?.status === 'warning' ? 'bg-warning/5 text-warning border-warning/20' :
+                     'bg-success/5 text-success border-success/20'
                    }`}>
+                     <div className={`w-2 h-2 rounded-full animate-pulse transition-colors ${
+                        selectedInstrument?.status === 'critical' ? 'bg-critical' :
+                        selectedInstrument?.status === 'warning' ? 'bg-warning' :
+                        'bg-success'
+                     }`} />
                      {selectedInstrument?.status}
                    </div>
                 </div>

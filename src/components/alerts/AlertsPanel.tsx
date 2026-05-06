@@ -121,7 +121,7 @@ export default function AlertsPanel({ alerts, onSelectAlert, isCollapsed, onTogg
             )}
 
             {/* Footer Insight */}
-            <div className="mt-auto px-6 py-4 bg-slate-dark text-white/90 text-xs font-mono">
+            <div className="mt-auto px-6 h-[52px] flex items-center bg-slate-dark text-white/90 text-xs font-mono">
               <div className="flex items-center gap-2 opacity-70">
                 <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
                 <span>VIGILANCE AGENT: ACTIVE</span>

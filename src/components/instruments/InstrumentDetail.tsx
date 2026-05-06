@@ -153,7 +153,7 @@ export default function InstrumentDetail({ instrument, onUpdate }: InstrumentDet
   ];
 
   return (
-    <div className="max-w-6xl mx-auto p-10 pb-24 font-body">
+    <div className="max-w-6xl mx-auto pt-10 pb-24 px-10 font-body">
       {/* Alarm Section (Level 2 Core - Problem) */}
       {instrument.status !== 'operational' && (
         <motion.div 
