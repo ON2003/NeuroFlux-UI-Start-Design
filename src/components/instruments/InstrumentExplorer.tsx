@@ -7,9 +7,14 @@ import RoomView from './RoomView';
 interface InstrumentExplorerProps {
   instruments: Instrument[];
   onSelectInstrument: (instrument: Instrument) => void;
+  isSidebarCollapsed?: boolean;
 }
 
-export default function InstrumentExplorer({ instruments: initialInstruments, onSelectInstrument }: InstrumentExplorerProps) {
+export default function InstrumentExplorer({ 
+  instruments: initialInstruments, 
+  onSelectInstrument,
+  isSidebarCollapsed = false
+}: InstrumentExplorerProps) {
   const [viewMode, setViewMode] = useState<'list' | 'room'>('list');
   const [fleetInstruments, setFleetInstruments] = useState<Instrument[]>(initialInstruments);
   const [search, setSearch] = useState('');
@@ -129,9 +134,13 @@ export default function InstrumentExplorer({ instruments: initialInstruments, on
   };
 
   return (
-    <section className="flex-1 h-full bg-lab-bg flex flex-col px-8 py-8 overflow-hidden relative">
-      <div className="mb-8">
-        <h2 className="text-xl font-sans font-bold text-slate-dark uppercase tracking-tight mb-6">Fleet Status & Control</h2>
+    <motion.section 
+      animate={{ width: isSidebarCollapsed ? '62.2%' : '62.2%' }}
+      transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+      className="h-full bg-lab-bg flex flex-col px-6 py-8 overflow-hidden relative border-x border-lab-surface shadow-inner"
+    >
+      <div className="mb-6">
+        <h2 className="text-xl font-sans font-bold text-slate-dark uppercase tracking-tight mb-4">Fleet Status & Control</h2>
         
         <div className="flex items-center justify-between">
           {/* Left Part: Search */}
@@ -336,6 +345,6 @@ export default function InstrumentExplorer({ instruments: initialInstruments, on
           </AnimatePresence>
         </div>
       </div>
-    </section>
+    </motion.section>
   );
 }

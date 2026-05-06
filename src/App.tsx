@@ -128,6 +128,7 @@ export default function App() {
                 }}
               />
               <InstrumentExplorer 
+                isSidebarCollapsed={isAlertsCollapsed}
                 instruments={instruments} 
                 onSelectInstrument={handleSelectInstrument}
               />
